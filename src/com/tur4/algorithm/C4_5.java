@@ -1,4 +1,4 @@
-\package com.tur4.algorithm;
+package com.tur4.algorithm;
 
 import java.io.BufferedReader;
 import java.io.File;
