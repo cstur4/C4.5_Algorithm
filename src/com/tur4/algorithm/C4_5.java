@@ -45,7 +45,11 @@ public class C4_5 {
 	private Document doc;
 	private String outFilePath = "decisionTree.xml";
 	private String mostClass;//未被覆盖的多数类
+<<<<<<< HEAD
 	private int[] flags;
+=======
+	
+>>>>>>> 199a058cec47e7edd6e3238508d232ec1115ec5d
 	public void setOutFilePath(String path){
 		this.outFilePath = path;
 	}
@@ -288,6 +292,26 @@ public class C4_5 {
 		
 	}
 	
+	private String getMostProbabilityClass(List<Integer> set){
+		Map<String, Integer> map = new HashMap<String, Integer>();
+		String res = null;
+		Integer most = 0;
+		for(Integer idx: set){
+			String key = data.get(idx).get(decidx);
+			if(!map.containsKey(key))
+				map.put(key, 1);
+			else
+				map.put(key, map.get(key) + 1);
+			if(map.get(key) > most){
+				most = map.get(key);
+				res = key;
+			}
+		}
+		mostClass = res;
+		return res;
+		
+	}
+	
 	private void buildTree(String xpath, String preEleName, String preVal, List<Integer> set, ArrayList<String> attrs){
 		
 		String newXpath = xpath + "/" + preEleName + "[@" + VALUE + "='" + preVal + "']";
@@ -330,6 +354,12 @@ public class C4_5 {
 			return;
 		}
 		
+		if(attrs==null || attrs.size()==0){
+			String className = getMostProbabilityClass(set);
+			ele.addText(className);
+			return;
+		}
+		
 		double minEntropy = Double.MAX_VALUE;
 		int attrIdx = -1;
 		String attr = null;
@@ -352,7 +382,11 @@ public class C4_5 {
 			}
 		}
 		if(attrIdx == -1){
+<<<<<<< HEAD
 			ele.setText(getNotCoverMostClass());
+=======
+			ele.setText(getMostProbabilityClass(set));
+>>>>>>> 199a058cec47e7edd6e3238508d232ec1115ec5d
 			return;
 		}
 		LOG.debug("attrs="+attrs + "\tattr="+attr + "\tattrIdx="+attrIdx);
