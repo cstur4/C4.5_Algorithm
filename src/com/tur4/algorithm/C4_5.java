@@ -44,7 +44,7 @@ public class C4_5 {
 	private Element root;
 	private Document doc;
 	private String outFilePath = "decisionTree.xml";
-	private String mostClass;//Î´±»¸²¸ÇµÄ¶àÊýÀà
+	private String mostClass;//Î´ï¿½ï¿½ï¿½ï¿½ï¿½ÇµÄ¶ï¿½ï¿½ï¿½ï¿½ï¿½
 <<<<<<< HEAD
 	private int[] flags;
 =======
@@ -370,7 +370,7 @@ public class C4_5 {
 			if(entropy < minEntropy){
 				minEntropy = entropy;
 				attr = tmpAttr;
-				attrIdx = findAttrNameIndex(attr);//attrNamesµÄË÷Òý²»Ò»¶¨Óë¿ÉÑ¡ÊôÐÔ¼¯µÄË÷ÒýÏàÍ¬
+				attrIdx = findAttrNameIndex(attr);//attrNamesï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¬
 			}
 		}
 		
@@ -382,11 +382,7 @@ public class C4_5 {
 			}
 		}
 		if(attrIdx == -1){
-<<<<<<< HEAD
 			ele.setText(getNotCoverMostClass());
-=======
-			ele.setText(getMostProbabilityClass(set));
->>>>>>> 199a058cec47e7edd6e3238508d232ec1115ec5d
 			return;
 		}
 		LOG.debug("attrs="+attrs + "\tattr="+attr + "\tattrIdx="+attrIdx);
