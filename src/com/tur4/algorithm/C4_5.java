@@ -45,11 +45,8 @@ public class C4_5 {
 	private Document doc;
 	private String outFilePath = "decisionTree.xml";
 	private String mostClass;//δ�����ǵĶ�����
-<<<<<<< HEAD
 	private int[] flags;
-=======
-	
->>>>>>> 199a058cec47e7edd6e3238508d232ec1115ec5d
+
 	public void setOutFilePath(String path){
 		this.outFilePath = path;
 	}
