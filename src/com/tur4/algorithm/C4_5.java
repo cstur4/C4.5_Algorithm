@@ -9,8 +9,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,6 +44,7 @@ public class C4_5 {
 	private Element root;
 	private Document doc;
 	private String outFilePath = "decisionTree.xml";
+	private String mostClass;//未被覆盖的多数类
 	
 	public void setOutFilePath(String path){
 		this.outFilePath = path;
@@ -95,7 +99,7 @@ public class C4_5 {
 				}
 		}
 		
-		LOG.debug("attrNames=" + attrNames + "\r\nattrValues=" + attrValues + "\r\ndata=" + data);
+		//LOG.debug("attrNames=" + attrNames + "\r\nattrValues=" + attrValues + "\r\ndata=" + data);
 		if(decision==null || decision.trim().length()==0)
 			this.decidx = attrNames.size()-1;
 		else
@@ -115,13 +119,20 @@ public class C4_5 {
 	}
 	
 	private double calcEntropy(int[] info){
-		double entropy = 0.0;
+		
 		int sum = 0;
+		for(int integer:info)
+			sum += integer;
+		if(sum == 0)
+			return 0.0;
+		double entropy = 0.0;
+		
 		for(int i=0;i<info.length;++i){
 			entropy -= info[i] * Math.log(Double.MIN_VALUE + info[i]) / Math.log(2);
-			sum += info[i];
 		}
 		entropy += sum * Math.log(Double.MIN_VALUE + sum) / Math.log(2);
+		//LOG.info("info=" + Arrays.toString(info)+"\tentropy="+entropy/sum);
+		
 		return entropy/sum;
 	
 	}
@@ -157,20 +168,20 @@ public class C4_5 {
 			
 			info[idx][classIdx]++;
 		}
-		
 		double entropy = 0.0;
 		double splitEntropy = 0.0;
 		double sum = idxSet.size();
 		
 		for(int i=0;i<diffValues;++i){
+			//LOG.debug("count[i]/sum * calcEntropy(info[i])="+(count[i]/sum)+"*"+calcEntropy(info[i]));
 			entropy += count[i]/sum * calcEntropy(info[i]);
 			splitEntropy -= count[i] * Math.log(Double.MIN_VALUE + count[i]) / Math.log(2);
 		}
 		
 		splitEntropy += sum * Math.log(Double.MIN_VALUE + sum) / Math.log(2);
 		splitEntropy /= sum;
-		
-		return entropy/splitEntropy;
+		//LOG.debug("entropy="+entropy+"\tsplitEntropy="+splitEntropy+"\tres="+entropy/(splitEntropy + Double.MIN_VALUE));
+		return entropy/(splitEntropy + Double.MIN_VALUE);
 		
 	}
 	
@@ -229,6 +240,26 @@ public class C4_5 {
 		return null;
 	}
 	
+	private String getMostProbabilityClass(List<Integer> set){
+		Map<String, Integer> map = new HashMap<String, Integer>();
+		String res = null;
+		Integer most = 0;
+		for(Integer idx: set){
+			String key = data.get(idx).get(decidx);
+			if(!map.containsKey(key))
+				map.put(key, 1);
+			else
+				map.put(key, map.get(key) + 1);
+			if(map.get(key) > most){
+				most = map.get(key);
+				res = key;
+			}
+		}
+		mostClass = res;
+		return res;
+		
+	}
+	
 	private void buildTree(String xpath, String preEleName, String preVal, List<Integer> set, ArrayList<String> attrs){
 		
 		String newXpath = xpath + "/" + preEleName + "[@" + VALUE + "='" + preVal + "']";
@@ -243,11 +274,29 @@ public class C4_5 {
 			if(ele.attributeValue(VALUE).equals(preVal))
 				break; 
 		}
-		LOG.debug("element=" + ele);
-		LOG.debug("eleName=" + preEleName +"\tval=" + preVal);
+		
+		if(set.size() == 0){
+			if(mostClass == null){
+				List<Integer> records = new ArrayList<Integer>(data.size());
+				for(int i=0;i<data.size();++i)
+					records.add(i);
+				mostClass = getMostProbabilityClass(records);
+			}
+			ele.setText(mostClass);
+			return;
+		}
+		
+		//LOG.debug("element=" + ele);
+		//LOG.debug("eleName=" + preEleName +"\tval=" + preVal);
 		Res res = pureInfo(set);
 		if(res.isPure){
 			ele.addText(res.clazz);
+			return;
+		}
+		
+		if(attrs==null || attrs.size()==0){
+			String className = getMostProbabilityClass(set);
+			ele.addText(className);
 			return;
 		}
 		
@@ -264,7 +313,7 @@ public class C4_5 {
 				attrIdx = findAttrNameIndex(attr);//attrNames的索引不一定与可选属性集的索引相同
 			}
 		}
-
+		
 		ArrayList<String> remainAttrs = (ArrayList<String>) attrs.clone();
 		for(int i=0;i<remainAttrs.size();++i){
 			if(remainAttrs.get(i).equals(attr)){
@@ -272,12 +321,18 @@ public class C4_5 {
 				break;
 			}
 		}
-		
-		//LOG.debug("attrs="+attrs + "\tattr="+attr + "\tattrIdx="+attrIdx);
-		List<ArrayList<Integer>> subsets = new ArrayList<ArrayList<Integer>>(attrValues.get(attrIdx).size());
+		if(attrIdx == -1){
+			ele.setText(getMostProbabilityClass(set));
+			return;
+		}
+		LOG.debug("attrs="+attrs + "\tattr="+attr + "\tattrIdx="+attrIdx);
+	
+		 List<ArrayList<Integer>> subsets = new ArrayList<ArrayList<Integer>>(attrValues.get(attrIdx).size());
 		for(int i=0;i<attrValues.get(attrIdx).size();++i){
 			subsets.add(new ArrayList<Integer>());
 		}
+		
+		
 		for(Integer idx: set){
 			List<String> record = data.get(idx);
 			int attrValIndex = findAttrValueIndex(attrIdx, record.get(attrIdx));
