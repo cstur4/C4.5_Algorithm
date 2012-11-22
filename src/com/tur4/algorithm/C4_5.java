@@ -1,4 +1,4 @@
-package com.tur4.algorithm;
+\package com.tur4.algorithm;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -45,7 +45,7 @@ public class C4_5 {
 	private Document doc;
 	private String outFilePath = "decisionTree.xml";
 	private String mostClass;//未被覆盖的多数类
-	
+	private int[] flags;
 	public void setOutFilePath(String path){
 		this.outFilePath = path;
 	}
@@ -105,6 +105,9 @@ public class C4_5 {
 		else
 			setDecision(decision);
 		
+		flags = new int[data.size()];
+		for(int i=0;i<data.size();++i)
+			flags[i] = 0;
 		doc = DocumentHelper.createDocument();
 		root = doc.addElement(ROOT).addAttribute(VALUE, ALL);
 	}
@@ -239,7 +242,31 @@ public class C4_5 {
 				return i;
 		return null;
 	}
+
 	
+	private String getNotCoverMostClass(){
+		int classNum[] = new int[attrValues.get(decidx).size()];
+		for(int i=0;i<attrValues.get(decidx).size();++i)
+			classNum[i] = 0;
+		for(int i=0;i<flags.length;++i){
+			if(flags[i] == 0)
+				classNum[attrNames.indexOf(data.get(i).get(decidx))]++;
+		}
+		int max = 0;
+		int idx = -1;
+		for(int i=0;i<classNum.length;++i)
+			if(max < classNum[i]){
+				max = classNum[i];
+				idx = i;
+			}
+		return attrValues.get(decidx).get(idx);
+	}
+	
+	/**
+	 * find the most class in the set
+	 * @param set
+	 * @return
+	 */
 	private String getMostProbabilityClass(List<Integer> set){
 		Map<String, Integer> map = new HashMap<String, Integer>();
 		String res = null;
@@ -250,6 +277,7 @@ public class C4_5 {
 				map.put(key, 1);
 			else
 				map.put(key, map.get(key) + 1);
+			
 			if(map.get(key) > most){
 				most = map.get(key);
 				res = key;
@@ -291,6 +319,8 @@ public class C4_5 {
 		Res res = pureInfo(set);
 		if(res.isPure){
 			ele.addText(res.clazz);
+			for(Integer idx: set)
+				flags[idx] = 1;
 			return;
 		}
 		
@@ -322,7 +352,7 @@ public class C4_5 {
 			}
 		}
 		if(attrIdx == -1){
-			ele.setText(getMostProbabilityClass(set));
+			ele.setText(getNotCoverMostClass());
 			return;
 		}
 		LOG.debug("attrs="+attrs + "\tattr="+attr + "\tattrIdx="+attrIdx);
